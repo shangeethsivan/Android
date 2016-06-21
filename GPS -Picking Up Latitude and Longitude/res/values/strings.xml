@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">GpsTest</string>
+    <string name="GPSAlertDialogTitle">Alert Dialog title</string>
+    <string name="GPSAlertDialogMessage">Alert Dialog Message</string>
+    <string name="action_settings">Action Settings</string>
+    <string name="cancel">Cancel</string>
+</resources>
