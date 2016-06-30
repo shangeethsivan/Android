@@ -1,0 +1,13 @@
+1. Use a local server like wamp or xamp to use the php file and
+place them in your folder.
+
+2. Import the sql file in your database.
+
+3. Modifyt the DB config file as per your need.
+
+4. Create a new android project and replace the java file and xml files.
+
+
+--Thank you
+Shivthepro A.K.A., Shangeeth Sivan 
+30-06-2016 
