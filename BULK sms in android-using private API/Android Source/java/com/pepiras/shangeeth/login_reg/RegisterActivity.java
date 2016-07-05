@@ -1,4 +1,4 @@
-package com.pepiras.shangeeth.login_reg;
+package com.shangeeth.login_reg;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Intent;

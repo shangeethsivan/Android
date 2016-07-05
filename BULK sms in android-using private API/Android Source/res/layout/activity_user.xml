@@ -12,7 +12,9 @@
     <ListView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/listView" />
+        android:id="@+id/listView"
+        android:divider="@android:color/transparent"
+        android:dividerHeight="10dp"/>
 
     <EditText
         android:layout_width="match_parent"
@@ -25,7 +27,7 @@
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Send to all"
+        android:text="Send to Selected"
         android:id="@+id/button"
         android:layout_gravity="center_horizontal" />
 

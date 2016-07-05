@@ -1,9 +1,12 @@
-package com.pepiras.rajesh.login_reg;
+package com.pepiras.shangeeth.login_reg;
+
 import android.app.Activity;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.database.DataSetObserver;
+import android.nfc.tech.NfcA;
 import android.os.AsyncTask;
+import android.renderscript.Sampler;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -44,23 +47,22 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-/**
- * Created by shangeethsivan on 29-06-2016 
- */
 
 public class UserActivity extends Activity {
 
     String myJSON;
+    ArrayList<String> names = new ArrayList<>();
 
-    private static final String TAG_RESULTS="result";
+    private static final String TAG_RESULTS = "result";
     private static final String TAG_NAME = "name";
     private static final String TAG_NUMBER = "number";
-    public static String message="";
+    public static String message = "";
+    public static int abc;
+    public String selected_names="";
 
     JSONArray peoples = null;
 
     ArrayList<HashMap<String, String>> personList;
-
     ListView list;
 
     @Override
@@ -70,45 +72,56 @@ public class UserActivity extends Activity {
 
 
         list = (ListView) findViewById(R.id.listView);
-        Button btn=(Button)findViewById(R.id.button);
-        final EditText edt=(EditText)findViewById(R.id.editText);
+        Button btn = (Button) findViewById(R.id.button);
+        final EditText edt = (EditText) findViewById(R.id.editText);
 
-        personList = new ArrayList<HashMap<String,String>>();
+        personList = new ArrayList<>();
         getData();
 
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                message=edt.getText().toString();
-                invokeRegister(message);
+                message = edt.getText().toString();
+                selected_names="";
+                Log.d("selected",selected_names);
+                names=CustomAdapter.getDetails();
+                   for (int j = 0; j < names.size(); j++) {
+                       Log.d("Selected", names.get(j));
+                       selected_names+=names.get(j)+" ";
+                   }
+                    Log.d("confirmed",selected_names);
+
+                invokeRegister(message,selected_names);
             }
         });
+
+
     }
 
 
-    protected void showList(){
+    protected void showList() {
         try {
             JSONObject jsonObj = new JSONObject(myJSON);
             peoples = jsonObj.getJSONArray(TAG_RESULTS);
 
 
-           for(int i=0;i<peoples.length();i++){
+            for (int i = 0; i < peoples.length(); i++) {
                 JSONObject c = peoples.getJSONObject(i);
                 String name = c.getString(TAG_NAME);
-               String number=c.getString(TAG_NUMBER);
-Log.d(name,number);
-                HashMap<String,String> persons = new HashMap<String,String>();
+                String number = c.getString(TAG_NUMBER);
 
-                persons.put(TAG_NAME,name);
-               persons.put(TAG_NUMBER,number);
+                HashMap<String, String> persons = new HashMap<String, String>();
+
+                persons.put(TAG_NAME, name);
+                persons.put(TAG_NUMBER, number);
 
                 personList.add(persons);
             }
 
-            ListAdapter adapter = new SimpleAdapter(
+            ListAdapter adapter = new CustomAdapter(
                     UserActivity.this, personList, R.layout.list_item,
-                    new String[]{TAG_NAME,TAG_NUMBER},
-                    new int[]{R.id.name,R.id.number}
+                    new String[]{TAG_NAME, TAG_NUMBER},
+                    new int[]{R.id.name, R.id.number}
             );
 
             list.setAdapter(adapter);
@@ -119,13 +132,13 @@ Log.d(name,number);
 
     }
 
-    public void getData(){
-        class GetDataJSON extends AsyncTask<String, Void, String>{
+    public void getData() {
+        class GetDataJSON extends AsyncTask<String, Void, String> {
 
             @Override
             protected String doInBackground(String... params) {
                 DefaultHttpClient httpclient = new DefaultHttpClient(new BasicHttpParams());
-                HttpPost httppost = new HttpPost("http://192.168.1.140/bulk/get_data.php");// use localhost or your local ip 
+                HttpPost httppost = new HttpPost("http://192.168.1.12/bulk/get_data.php");
 
                 // Depends on your web service
                 httppost.setHeader("Content-type", "application/json");
@@ -142,23 +155,24 @@ Log.d(name,number);
                     StringBuilder sb = new StringBuilder();
 
                     String line = null;
-                    while ((line = reader.readLine()) != null)
-                    {
+                    while ((line = reader.readLine()) != null) {
                         sb.append(line + "\n");
                     }
                     result = sb.toString();
                 } catch (Exception e) {
                     // Oops
-                }
-                finally {
-                    try{if(inputStream != null)inputStream.close();}catch(Exception squish){}
+                } finally {
+                    try {
+                        if (inputStream != null) inputStream.close();
+                    } catch (Exception squish) {
+                    }
                 }
                 return result;
             }
 
             @Override
-            protected void onPostExecute(String result){
-                myJSON=result;
+            protected void onPostExecute(String result) {
+                myJSON = result;
                 showList();
             }
         }
@@ -166,7 +180,7 @@ Log.d(name,number);
         g.execute();
     }
 
-    private void invokeRegister(final String message) {
+    private void invokeRegister(final String message,final String selected_names) {
 
         class LoginAsync extends AsyncTask<String, Void, String> {
 
@@ -181,16 +195,16 @@ Log.d(name,number);
             @Override
             protected String doInBackground(String... params) {
                 String msg = params[0];
-
+                String selected=params[1];
                 InputStream is = null;
                 List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
                 nameValuePairs.add(new BasicNameValuePair("message", msg));
-
+                nameValuePairs.add(new BasicNameValuePair("selected", selected));
                 String result = null;
                 try {
                     HttpClient httpClient = new DefaultHttpClient();
                     HttpPost httpPost = new HttpPost(
-                            "http://192.168.1.140/bulk/send_sms.php");// use localhost or your local ip
+                            "http://192.168.1.12/bulk/send_sms.php");
 
                     httpPost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
 
@@ -222,7 +236,7 @@ Log.d(name,number);
             protected void onPostExecute(String result) {
                 String s = result.trim();
                 loadingDialog.dismiss();
-                Log.d("FIND","TEST:"+s);
+                Log.d("FIND", "TEST:" + s);
                 Toast.makeText(getApplicationContext(), s, Toast.LENGTH_LONG).show();
 
 
@@ -230,7 +244,7 @@ Log.d(name,number);
         }
 
         LoginAsync la = new LoginAsync();
-        la.execute(message);
+        la.execute(message,selected_names);
 
     }
 
